@@ -1,6 +1,6 @@
 {
   "name": "@martel/hyperapp-scripts",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Hyperapp expansion pack for create-react-app",
   "bin": {
     "hyperapp-scripts": "./bin/index.js"
