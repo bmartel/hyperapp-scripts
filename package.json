@@ -31,12 +31,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/okwolf/hyperapp-scripts.git"
+    "url": "git+https://github.com/bmartel/hyperapp-scripts.git"
   },
-  "author": "Wolfgang Wedemeyer <wolf@okwolf.com>",
+  "author": "Brandon Martel <brandonmartel@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/okwolf/hyperapp-scripts/issues"
+    "url": "https://github.com/bmartel/hyperapp-scripts/issues"
   },
-  "homepage": "https://github.com/okwolf/hyperapp-scripts"
+  "homepage": "https://github.com/bmartel/hyperapp-scripts"
 }
