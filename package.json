@@ -13,7 +13,7 @@
     "start": "npm run setup && cd example && npm start",
     "test": "npm run clean && npm run setup && cd example && npm run build && cross-env CI=1 npm test",
     "check": "npm run format:check && npm test",
-    "release": "node pre-flight-tests && npm run check && git tag $npm_package_version && git push && git push --tags && npm publish"
+    "release": "node pre-flight-tests && git tag $npm_package_version && git push && git push --tags && npm publish"
   },
   "dependencies": {
     "react-scripts": "^3.4.1"
