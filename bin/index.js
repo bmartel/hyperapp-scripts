@@ -10,19 +10,31 @@ const spawn = require("react-dev-utils/crossSpawn");
 const args = process.argv.slice(2);
 
 const scriptIndex = args.findIndex(
-  x => x === "build" || x === "eject" || x === "start" || x === "test"
+  x =>
+    x === "build" ||
+    x === "eject" ||
+    x === "start" ||
+    x === "test" ||
+    x === "watch"
 );
 const script = scriptIndex === -1 ? args[0] : args[scriptIndex];
 const nodeArgs = scriptIndex > 0 ? args.slice(0, scriptIndex) : [];
 
-if (["build", "eject", "start", "test"].includes(script)) {
-  const result = spawn.sync(
+const scripts = {
+  eject: () => [""],
+  test: () => [
     process.execPath,
     nodeArgs
       .concat(require.resolve("../scripts/" + script))
-      .concat(args.slice(scriptIndex + 1)),
-    { stdio: "inherit" }
-  );
+      .concat(args.slice(scriptIndex + 1))
+  ],
+  build: () => "rimraf public && cross-env NODE_ENV=production rollup -c",
+  start: () => "serve public",
+  watch: () => "NODE_ENV=development rollup -c -w"
+};
+
+if (["build", "eject", "start", "test", "watch"].includes(script)) {
+  const result = spawn.sync(...scripts[script](), { stdio: "inherit" });
   if (result.signal) {
     if (result.signal === "SIGKILL") {
       console.log(

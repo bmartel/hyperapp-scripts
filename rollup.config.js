@@ -1,91 +1,79 @@
-const { default: resolve } = require("@rollup/plugin-node-resolve");
-const commonjs = require("@rollup/plugin-commonjs");
-const { terser } = require("rollup-plugin-terser");
-const htmlPlugin = require("@rollup/plugin-html");
-const postcss = require("rollup-plugin-postcss");
-const purgecss = require("@fullhuman/postcss-purgecss");
-const cssnano = require("cssnano");
-const typescript = require("rollup-plugin-typescript2");
-const livereload = require("rollup-plugin-livereload");
-
-const { default: html, makeHtmlAttributes } = htmlPlugin;
-
-const production = !process.env.ROLLUP_WATCH;
-const isDevServer = !!process.env.ROLLUP_LIVERELOAD;
-
-console.log(resolve);
-function serve({ publicDir = "public", port = 3000 }) {
-  let server;
-
-  function toExit() {
-    if (server) server.kill(0);
-  }
-
-  return {
-    writeBundle() {
-      if (server) return;
-      server = require("child_process").spawn(
-        "sirv",
-        [publicDir, "--dev", `--port ${port}`],
-        {
-          stdio: ["ignore", "inherit", "inherit"],
-          shell: true
-        }
-      );
-
-      process.on("SIGTERM", toExit);
-      process.on("exit", toExit);
-    }
-  };
-}
+import postcss from "rollup-plugin-postcss";
+import cssnano from "cssnano";
+import purgecss from "@fullhuman/postcss-purgecss";
+import replace from "@rollup/plugin-replace";
+import resolve from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
+import babel from "@rollup/plugin-babel";
+import html from "@rollup/plugin-html";
+import { terser } from "rollup-plugin-terser";
+import serve from "rollup-plugin-serve";
+import livereload from "rollup-plugin-livereload";
 
 const defaultExtractor = content => content.match(/[A-Za-z0-9-_:/]+/g) || [];
+const purgeContent = ["src/**/*.js", "src/**/*.ts", "public/**/*.html"];
 
-const plugins = ({
-  cssOutput,
-  publicPath = "/",
-  htmlFile = "index.html",
-  tailwindConfig,
-  purgeContent = ["src/**/*.js", "src/**/*.ts", "public/**/*.html"],
-  purgeExtractor = defaultExtractor
-}) =>
-  [
+const isProd = process.env.NODE_ENV === "production";
+const extensions = [".js", ".ts", ".tsx", "jsx"];
+
+export default {
+  input: "src/index.ts",
+  output: {
+    file: "public/index.js",
+    format: "iife"
+  },
+  plugins: [
+    replace({
+      "process.env.NODE_ENV": JSON.stringify(
+        isProd ? "production" : "development"
+      )
+    }),
     resolve({
-      browser: true
+      extensions
     }),
     commonjs({
-      include: "node_modules/**"
+      include: /node_modules/
     }),
-    typescript({
-      typescript: require("typescript")
-    }),
-    postcss({
-      extract: cssOutput, //path.resolve("index.css"),
+    babel({
+      extensions,
+      exclude: /node_modules/,
+      babelrc: false,
+      runtimeHelpers: true,
+      presets: [
+        "@babel/preset-env",
+        "@babel/preset-react",
+        "@babel/preset-typescript"
+      ],
       plugins: [
-        require("postcss-import"),
-        require("tailwindcss")(tailwindConfig),
-        require("autoprefixer"),
-        process.env.NODE_ENV === "production" &&
-          purgecss({
-            content: purgeContent,
-            defaultExtractor: purgeExtractor
-          }),
-        process.env.NODE_ENV === "production" &&
-          cssnano({
-            preset: [
-              "default",
-              {
-                discardComments: {
-                  removeAll: true
-                }
-              }
-            ]
-          })
-      ].filter(Boolean)
+        [
+          "@babel/transform-react-jsx",
+          {
+            pragma: "h",
+            useBuiltIns: true
+          }
+        ],
+        "@babel/plugin-syntax-dynamic-import",
+        "@babel/plugin-proposal-class-properties",
+        [
+          "@babel/plugin-proposal-object-rest-spread",
+          {
+            useBuiltIns: true
+          }
+        ],
+        [
+          "@babel/plugin-transform-runtime",
+          {
+            corejs: 3,
+            helpers: true,
+            regenerator: true,
+            useESModules: false
+          }
+        ]
+      ]
     }),
     html({
-      publicPath,
-      fileName: htmlFile,
+      fileName: "index.html",
+      title: "Rollup + TypeScript + React = ❤️",
       template: async ({ attributes, title, files, meta, publicPath }) => {
         const scripts = (files.js || [])
           .map(({ fileName }) => {
@@ -118,61 +106,52 @@ const plugins = ({
     ${links}
   </head>
   <body class="font-sans">
-    {{embed}}
+   <div id="app"></div>
     ${scripts}
   </body>
 </html>`;
       }
     }),
-    process.env.NODE_ENV === "production" &&
+    postcss({
+      extract: "public/index.css",
+      plugins: [
+        require("postcss-import"),
+        require("tailwindcss")("./tailwind.config.js"),
+        require("autoprefixer"),
+        process.env.NODE_ENV === "production" &&
+          purgecss({
+            content: purgeContent,
+            defaultExtractor
+          }),
+        process.env.NODE_ENV === "production" &&
+          cssnano({
+            preset: [
+              "default",
+              {
+                discardComments: {
+                  removeAll: true
+                }
+              }
+            ]
+          })
+      ].filter(Boolean)
+    }),
+    isProd &&
       terser({
         output: {
           comments: false
         }
+      }),
+    !isProd &&
+      serve({
+        host: "localhost",
+        port: 3000,
+        open: true,
+        contentBase: ["public"]
+      }),
+    !isProd &&
+      livereload({
+        watch: "public"
       })
-  ].filter(Boolean);
-
-const devServer = ({
-  input = "src/index.ts",
-  output = "public/bundle.js",
-  ...configs
-} = {}) => ({
-  input,
-  output: {
-    sourcemap: true,
-    format: "iife",
-    name: "app",
-    file: output
-  },
-  plugins: [
-    resolve({
-      browser: true
-    }),
-    commonjs({
-      include: "node_modules/**"
-    }),
-    typescript({
-      typescript: require("typescript")
-    }),
-    serve(configs),
-    livereload("public")
-  ],
-  watch: {
-    clearScreen: false
-  }
-});
-
-const build = ({ input = "src/index.ts", ...configs } = {}) => ({
-  input,
-  output: {
-    format: "esm",
-    sourcemap: !production
-  },
-  plugins: plugins(configs)
-});
-
-module.exports = {
-  build,
-  devServer,
-  default: isDevServer ? devServer : build
+  ]
 };

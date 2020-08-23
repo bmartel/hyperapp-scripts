@@ -2,12 +2,13 @@ import { h, text } from "hyperapp";
 import logo from "./logo.svg";
 import "./App.css";
 
-const p = ({ ...state }, children) => h("p", state, children);
-const header = ({ ...state }, children) => h("header", state, children);
+const div = ({ ...state }, children: any) => h("div", state, children);
+const p = ({ ...state }, children: any) => h("p", state, children);
+const header = ({ ...state }, children: any) => h("header", state, children);
+const code = ({ ...state }, children: any) => h("code", state, children);
 const img = ({ ...state }) => h("img", state);
-const code = ({ ...state }) => h("code", state, children);
 
-const App = state =>
+const App = () =>
   div({ class: "App" }, [
     header({ class: "App-header" }, [
       img({ src: logo, class: "App-logo", alt: "logo" }),

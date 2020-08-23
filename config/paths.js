@@ -55,5 +55,6 @@ module.exports = {
   ownPath: resolveOwn("."),
   ownTsConfig: resolveOwn("tsconfig.json"),
   ownNodeModules: resolveOwn("node_modules"),
-  ownRollupConfig: resolveOwn("rollup.config.js")
+  ownRollupConfig: resolveOwn("rollup.config.js"),
+  moduleFileExtensions
 };
