@@ -85,5 +85,10 @@ require.cache["react"] = {
   exports: { version: "999.999.999" }
 };
 
-// call original react script
-require(`react-scripts/scripts/${script}.js`);
+if (script === "build") {
+  // call modified react script
+  require(`../scripts/${script}.js`);
+} else {
+  // call original react script
+  require(`react-scripts/scripts/${script}.js`);
+}
