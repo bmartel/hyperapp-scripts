@@ -28,7 +28,12 @@ const scripts = {
       .concat(require.resolve("../scripts/" + script))
       .concat(args.slice(scriptIndex + 1))
   ],
-  build: () => "rimraf public && cross-env NODE_ENV=production rollup -c",
+  build: () => [
+    process.execPath,
+    nodeArgs
+      .concat(require.resolve("../scripts/" + script))
+      .concat(args.slice(scriptIndex + 1))
+  ],
   start: () => "serve public",
   watch: () => "NODE_ENV=development rollup -c -w"
 };

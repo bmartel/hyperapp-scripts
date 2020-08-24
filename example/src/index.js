@@ -4,6 +4,6 @@ import App from "./App";
 
 app({
   init: {},
-  view: state => App(state),
+  view: App,
   node: document.getElementById("app")
 });

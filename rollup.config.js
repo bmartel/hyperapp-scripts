@@ -1,26 +1,28 @@
-import postcss from "rollup-plugin-postcss";
-import cssnano from "cssnano";
-import purgecss from "@fullhuman/postcss-purgecss";
-import replace from "@rollup/plugin-replace";
-import resolve from "@rollup/plugin-node-resolve";
-import commonjs from "@rollup/plugin-commonjs";
-import babel from "@rollup/plugin-babel";
-import html from "@rollup/plugin-html";
-import { terser } from "rollup-plugin-terser";
-import serve from "rollup-plugin-serve";
-import livereload from "rollup-plugin-livereload";
+const postcss = require("rollup-plugin-postcss");
+const cssnano = require("cssnano");
+const purgecss = require("@fullhuman/postcss-purgecss");
+const replace = require("@rollup/plugin-replace");
+const resolve = require("@rollup/plugin-node-resolve").default;
+const commonjs = require("@rollup/plugin-commonjs");
+const babel = require("@rollup/plugin-babel").default;
+const html = require("@rollup/plugin-html");
+const { terser } = require("rollup-plugin-terser");
+const serve = require("rollup-plugin-serve");
+const livereload = require("rollup-plugin-livereload");
 
 const defaultExtractor = content => content.match(/[A-Za-z0-9-_:/]+/g) || [];
 const purgeContent = ["src/**/*.js", "src/**/*.ts", "public/**/*.html"];
 
+const { makeHtmlAttributes } = html;
+
 const isProd = process.env.NODE_ENV === "production";
 const extensions = [".js", ".ts", ".tsx", "jsx"];
 
-export default {
-  input: "src/index.ts",
+module.exports = {
+  input: "src/index.js",
   output: {
     file: "public/index.js",
-    format: "iife"
+    format: "cjs"
   },
   plugins: [
     replace({
@@ -29,6 +31,7 @@ export default {
       )
     }),
     resolve({
+      jsnext: true,
       extensions
     }),
     commonjs({
@@ -38,7 +41,7 @@ export default {
       extensions,
       exclude: /node_modules/,
       babelrc: false,
-      runtimeHelpers: true,
+      babelHelpers: "runtime",
       presets: [
         "@babel/preset-env",
         "@babel/preset-react",

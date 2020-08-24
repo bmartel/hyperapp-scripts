@@ -1,3 +1,3 @@
-import config from "hyperapp-scripts/rollup.config.js";
+const config = require("hyperapp-scripts/rollup.config.js");
 
-export default config;
+module.exports = config;
